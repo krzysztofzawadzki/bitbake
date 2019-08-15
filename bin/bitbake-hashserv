@@ -10,6 +10,7 @@ import sys
 import logging
 import argparse
 import sqlite3
+import multiprocessing
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__)),'lib'))
 
@@ -27,6 +28,8 @@ def main():
     parser.add_argument('--prefix', default='', help='HTTP path prefix (default "%(default)s")')
     parser.add_argument('--database', default='./hashserv.db', help='Database file (default "%(default)s")')
     parser.add_argument('--log', default='WARNING', help='Set logging level')
+    parser.add_argument('--threads', '-j', type=int, default=multiprocessing.cpu_count(),
+                        help='Number of server threads. Default is %(default)d')
 
     args = parser.parse_args()
 
@@ -41,7 +44,7 @@ def main():
     console.setLevel(level)
     logger.addHandler(console)
 
-    server = hashserv.create_server((args.address, args.port), args.database, args.prefix)
+    server = hashserv.create_server((args.address, args.port), args.database, args.prefix, num_threads=args.threads)
     server.serve_forever()
     return 0
 
